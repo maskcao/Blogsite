@@ -1,8 +1,10 @@
-const landscapeImages = import.meta.glob('/src/assets/photography/landscape/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
-const humanityImages = import.meta.glob('/src/assets/photography/humanity/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
-const spaceImages = import.meta.glob('/src/assets/photography/space/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
+const landscapeOriginals = import.meta.glob('/src/assets/photography/landscape/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
 
-// Helper to find thumbnail image
+const humanityOriginals = import.meta.glob('/src/assets/photography/humanity/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
+
+const spaceOriginals = import.meta.glob('/src/assets/photography/space/*.{png,jpg,jpeg,webp}', { eager: true, as: 'url' });
+
+// Helper to find thumbnail image (preferring optimized version)
 const getThumbnailUrl = (images: Record<string, string>): string => {
   const entries = Object.entries(images);
   const thumbnail = entries.find(([path]) => path.toLowerCase().includes('thumbnail'));
@@ -129,8 +131,8 @@ export const PROJECT_DATA = [
     id: 'p1',
     common: {
       category: 'Photography',
-      image: getThumbnailUrl(landscapeImages),
-      gallery: Object.values(landscapeImages)
+      image: getThumbnailUrl(landscapeOriginals),
+      gallery: Object.values(landscapeOriginals)
     },
     zh: {
       title: '风景',
@@ -157,8 +159,8 @@ export const PROJECT_DATA = [
     id: 'p2',
     common: {
       category: 'Photography',
-      image: getThumbnailUrl(humanityImages),
-      gallery: Object.values(humanityImages)
+      image: getThumbnailUrl(humanityOriginals),
+      gallery: Object.values(humanityOriginals)
     },
     zh: {
       title: '人文纪实',
@@ -185,8 +187,8 @@ export const PROJECT_DATA = [
     id: 'p3',
     common: {
       category: 'Photography',
-      image: getThumbnailUrl(spaceImages),
-      gallery: Object.values(spaceImages)
+      image: getThumbnailUrl(spaceOriginals),
+      gallery: Object.values(spaceOriginals)
     },
     zh: {
       title: '空间',
@@ -217,9 +219,9 @@ export const PROJECT_DATA = [
       image: 'https://www.figma.com/file/cRFVFLypB290MP6ImMgiPd/thumbnail?ver=thumbnails/07ca532d-7cc0-4922-b659-949b3193cfc5',
       figmaUrl: 'https://www.figma.com/design/cRFVFLypB290MP6ImMgiPd/%E5%A4%A7%E5%B9%BF%E8%B5%9B-%7C-%E5%8D%B3%E6%97%B6%E8%AE%BE%E8%AE%A1-%E5%BE%81%E8%BE%B0%C2%B7HMI%E6%99%BA%E8%83%BD%E5%BA%A7%E8%88%B1%E8%AE%BE%E8%AE%A1?node-id=55-2&t=7dPgyLMJDD32pFp4-1', 
       gallery: [
-        'https://picsum.photos/800/600?random=11',
-        'https://picsum.photos/800/600?random=12',
-        'https://picsum.photos/800/600?random=13'
+        { thumbnail: 'https://picsum.photos/800/600?random=11', original: 'https://picsum.photos/800/600?random=11' },
+        { thumbnail: 'https://picsum.photos/800/600?random=12', original: 'https://picsum.photos/800/600?random=12' },
+        { thumbnail: 'https://picsum.photos/800/600?random=13', original: 'https://picsum.photos/800/600?random=13' }
       ]
     },
     zh: {

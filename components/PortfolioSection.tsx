@@ -226,7 +226,7 @@ export const PortfolioSection: React.FC<PortfolioSectionProps> = ({ language, ex
                         
                         {selectedProject.gallery && selectedProject.gallery.length > 0 ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 w-full">
-                                {selectedProject.gallery.map((img, idx) => (
+                                {selectedProject.gallery.map((item, idx) => (
                                     <div 
                                         key={idx} 
                                         className="aspect-square overflow-hidden cursor-zoom-in relative group rounded-lg shadow-sm hover:shadow-md will-change-transform transform-gpu"
@@ -235,18 +235,19 @@ export const PortfolioSection: React.FC<PortfolioSectionProps> = ({ language, ex
                                             const lightbox = document.getElementById('lightbox-overlay');
                                             const lightboxImg = document.getElementById('lightbox-img') as HTMLImageElement;
                                             if (lightbox && lightboxImg) {
-                                                lightboxImg.src = img;
+                                                lightboxImg.src = item;
                                                 lightbox.classList.remove('hidden');
                                                 lightbox.classList.add('flex');
                                             }
                                         }}
                                     >
                                         <img 
-                                            src={img} 
+                                            src={item} 
                                             alt={`${selectedProject.title} ${idx + 1}`} 
                                             loading="lazy"
                                             decoding="async"
-                                            className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105 will-change-transform transform-gpu backface-hidden" 
+                                            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105 will-change-transform transform-gpu backface-hidden opacity-0" 
+                                            onLoad={(e) => e.currentTarget.classList.remove('opacity-0')}
                                         />
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200"></div>
                                     </div>
