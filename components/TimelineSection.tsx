@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { EDUCATION_DATA } from '../src/data/education';
 import { Language } from '../types';
@@ -17,6 +17,28 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ language }) =>
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRendered, setIsRendered] = useState(false);
+  
+  // Lock State
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [inputAnswer, setInputAnswer] = useState('');
+  const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isExploding, setIsExploding] = useState(false);
+  const [explosionTrigger, setExplosionTrigger] = useState(false);
+
+  // Particles Data
+  const particles = useMemo(() => {
+    return Array.from({ length: 60 }).map((_, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = 200 + Math.random() * 300; // Spread distance
+      const tx = Math.cos(angle) * velocity;
+      const ty = Math.sin(angle) * velocity;
+      const size = 8 + Math.random() * 12;
+      // Randomize particle types: 0=Green, 1=Contrast (Black/White), 2=Gray
+      const type = Math.random() > 0.6 ? 0 : (Math.random() > 0.3 ? 1 : 2);
+      return { id: i, tx, ty, size, type };
+    });
+  }, []);
 
   // Handle modal animation mounting/unmounting
   useEffect(() => {
@@ -30,6 +52,132 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ language }) =>
     }
   }, [isModalOpen]);
 
+  const handleUnlockSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputAnswer.trim() === '康') {
+      setIsSuccess(true);
+      // 1. Show Green Success State
+      setTimeout(() => {
+        setIsExploding(true);
+        // 2. Trigger Explosion Animation (Next Frame)
+        requestAnimationFrame(() => {
+          setExplosionTrigger(true);
+        });
+      }, 600);
+      
+      // 3. Unlock after explosion finishes (overlap last 0.3s)
+      setTimeout(() => {
+        setIsUnlocked(true);
+      }, 600 + 700);
+    } else {
+      setIsError(true);
+      setTimeout(() => setIsError(false), 800);
+    }
+  };
+
+  if (!isUnlocked) {
+    if (isExploding) {
+       return (
+         <div className="w-full min-h-[60vh] flex items-center justify-center px-4 relative overflow-hidden">
+            {particles.map(p => (
+               <div 
+                  key={p.id}
+                  className={`absolute rounded-full ${
+                    p.type === 0 ? 'bg-green-500' : 
+                    p.type === 1 ? 'bg-black dark:bg-white' : 
+                    'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                  style={{
+                     width: p.size,
+                     height: p.size,
+                     transform: explosionTrigger 
+                        ? `translate(${p.tx}px, ${p.ty}px) scale(0)` 
+                        : 'translate(0, 0) scale(1)',
+                     opacity: explosionTrigger ? 0 : 1,
+                     transition: 'transform 1s cubic-bezier(0.16, 1, 0.3, 1), opacity 1s ease-out'
+                  }}
+               />
+            ))}
+         </div>
+       );
+    }
+
+    return (
+      <div className={`w-full min-h-[60vh] flex items-center justify-center px-4 animate-fade-in transition-all duration-300 ${isSuccess ? 'scale-105' : 'scale-100'}`}>
+        <div className={`
+           w-full max-w-md bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-2xl p-10 md:p-14 text-center border border-gray-100 dark:border-gray-800 relative overflow-hidden group transition-all duration-500
+           ${isSuccess ? 'shadow-green-500/20 border-green-500/50' : 'animate-message-pop'}
+        `}>
+           
+           {/* Background Decor */}
+           <div className={`absolute top-0 left-0 w-full h-2 transition-colors duration-500 ${isSuccess ? 'bg-green-500' : 'bg-black dark:bg-white'}`}></div>
+           
+           <div className="mb-10">
+             <div className={`
+                w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center transition-all duration-500
+                ${isSuccess ? 'bg-green-500 rotate-180 scale-110' : 'bg-black dark:bg-white'}
+             `}>
+                <span className="text-3xl text-white dark:text-black font-bold">
+                  {isSuccess ? '!' : '?'}
+                </span>
+             </div>
+             <h2 className="text-2xl md:text-3xl font-black text-black dark:text-white mb-4">
+               {language === 'zh' ? '一个小问题' : 'Just a Question'}
+             </h2>
+             <p className="text-xl font-medium text-gray-500 dark:text-gray-400">
+               {isSuccess 
+                  ? (language === 'zh' ? '回答正确，欢迎！' : 'Access Granted!') 
+                  : (language === 'zh' ? '名字最后一个字是？' : 'Last character of name?')
+               }
+             </p>
+           </div>
+
+           <form onSubmit={handleUnlockSubmit} className="relative w-full">
+             <input 
+               type="text" 
+               value={inputAnswer}
+               onChange={(e) => {
+                 setInputAnswer(e.target.value);
+                 setIsError(false);
+               }}
+               disabled={isSuccess}
+               className={`
+                 w-full bg-gray-50 dark:bg-black/50 border-2 
+                 ${isError ? 'border-red-500 animate-[pulse_0.5s_ease-in-out]' : ''} 
+                 ${isSuccess ? 'border-green-500 text-green-500' : 'border-transparent focus:border-black dark:focus:border-white'}
+                 rounded-2xl px-6 py-4 text-center text-2xl font-black outline-none transition-all
+                 placeholder-gray-300 dark:placeholder-gray-700
+               `}
+               placeholder={language === 'zh' ? '请输入答案' : 'Answer...'}
+               autoFocus
+             />
+             <button 
+               type="submit"
+               disabled={isSuccess}
+               className={`
+                 mt-6 w-full font-bold py-4 rounded-xl transition-all duration-300
+                 ${isSuccess 
+                    ? 'bg-green-500 text-white scale-105 cursor-default' 
+                    : 'bg-black dark:bg-white text-white dark:text-black hover:scale-[1.02] active:scale-[0.98]'}
+               `}
+             >
+               {isSuccess 
+                  ? (language === 'zh' ? '验证通过' : 'SUCCESS') 
+                  : (language === 'zh' ? '解锁' : 'UNLOCK')
+               }
+             </button>
+           </form>
+           
+           {isError && (
+             <p className="absolute bottom-4 left-0 w-full text-red-500 text-sm font-bold animate-bounce">
+               {language === 'zh' ? '答案错误' : 'Incorrect Answer'}
+             </p>
+           )}
+        </div>
+      </div>
+    );
+  }
+
   // Helper to parse award string "Rank | Contest"
   const parseAward = (awardString: string) => {
     const parts = awardString.split('|');
@@ -40,7 +188,7 @@ export const TimelineSection: React.FC<TimelineSectionProps> = ({ language }) =>
   };
 
   return (
-    <div className="w-full max-w-[96vw] mx-auto pb-32 animate-fade-in relative">
+    <div className={`w-full max-w-[96vw] mx-auto pb-32 relative ${isUnlocked ? 'animate-[fadeIn_0.6s_ease-out_forwards]' : ''}`}>
       
       {/* Education & Experience Section */}
       <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 lg:gap-24 mb-24 lg:mb-32">
